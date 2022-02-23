@@ -2,14 +2,17 @@ package com.github.instagram4j.instagram4j.requests;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.instagram4j.instagram4j.IGClient;
 import com.github.instagram4j.instagram4j.IGConstants;
+import com.github.instagram4j.instagram4j.exceptions.ChallengeRequiredException;
 import com.github.instagram4j.instagram4j.exceptions.IGResponseException;
 import com.github.instagram4j.instagram4j.responses.IGResponse;
+import com.github.instagram4j.instagram4j.responses.challenge.ChallengeRequiredResponse;
 import com.github.instagram4j.instagram4j.utils.IGUtils;
 
 import kotlin.Pair;
@@ -56,8 +59,8 @@ public abstract class IGRequest<T extends IGResponse> {
             if (i + 1 < strings.length && strings[i] != null && strings[i + 1] != null
                     && !strings[i].toString().isEmpty()
                     && !strings[i + 1].toString().isEmpty()) {
-                builder.append(URLEncoder.encode(strings[i].toString(), "utf-8")).append("=")
-                        .append(URLEncoder.encode(strings[i + 1].toString(), "utf-8")).append("&");
+                builder.append(URLEncoder.encode(strings[i].toString(), StandardCharsets.UTF_8)).append("=")
+                        .append(URLEncoder.encode(strings[i + 1].toString(), StandardCharsets.UTF_8)).append("&");
             }
         }
 
@@ -69,6 +72,8 @@ public abstract class IGRequest<T extends IGResponse> {
         T igResponse = parseResponse(response.getSecond());
         igResponse.setStatusCode(response.getFirst().code());
         if (!response.getFirst().isSuccessful() || (igResponse.getStatus() != null && igResponse.getStatus().equals("fail"))) {
+            if (igResponse.getStatusCode() == 400 && igResponse.getMessage().equals("challenge_required"))
+                throw new ChallengeRequiredException(igResponse, ChallengeRequiredResponse.parseResponse(response.getSecond()));
             throw new IGResponseException(igResponse);
         }
 
