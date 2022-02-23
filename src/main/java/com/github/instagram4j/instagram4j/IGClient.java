@@ -1,15 +1,13 @@
 package com.github.instagram4j.instagram4j;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
 import com.github.instagram4j.instagram4j.actions.IGClientActions;
 import com.github.instagram4j.instagram4j.exceptions.ExceptionallyHandler;
 import com.github.instagram4j.instagram4j.exceptions.IGLoginException;
@@ -40,11 +38,13 @@ import okhttp3.CookieJar;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.jetbrains.annotations.NotNull;
 
 @Data
 @Slf4j
 public class IGClient implements Serializable {
-    private static final long serialVersionUID = -893265874836l;
+    @Serial
+    private static final long serialVersionUID = -893265874836L;
     private final String $username;
     private final String $password;
     private transient String encryptionId, encryptionKey, authorization;
@@ -130,13 +130,13 @@ public class IGClient implements Serializable {
         this.httpClient.newCall(req.formRequest(this)).enqueue(new Callback() {
 
             @Override
-            public void onFailure(Call call, IOException exception) {
+            public void onFailure(@NotNull Call call, @NotNull IOException exception) {
                 responseFuture.completeExceptionally(exception);
             }
 
             @Override
-            public void onResponse(Call call, Response res) throws IOException {
-                log.info("Response for {} : {}", call.request().url().toString(), res.code());
+            public void onResponse(@NotNull Call call, @NotNull Response res) throws IOException {
+                log.info("Response for {} : {}", call.request().url(), res.code());
                 try (ResponseBody body = res.body()) {
                     responseFuture.complete(new Pair<>(res, body.string()));
                 }
@@ -153,9 +153,7 @@ public class IGClient implements Serializable {
 
                     return req.parseResponse(res);
                 })
-                .exceptionally((tr) -> {
-                    return this.exceptionallyHandler.handle(tr, req.getResponseType());
-                });
+                .exceptionally((tr) -> this.exceptionallyHandler.handle(tr, req.getResponseType()));
     }
 
     private void setLoggedInState(LoginResponse state) {
@@ -186,6 +184,7 @@ public class IGClient implements Serializable {
         if (selfProfile != null) {
             load.set_uid(selfProfile.getPk().toString());
             load.set_uuid(this.guid);
+            load.setId(this.guid);
         } else {
             load.setId(this.guid);
         }
@@ -205,7 +204,7 @@ public class IGClient implements Serializable {
     }
 
     public static IGClient deserialize(File clientFile, File cookieFile,
-            OkHttpClient.Builder clientBuilder) throws ClassNotFoundException, IOException {
+                                       OkHttpClient.Builder clientBuilder) throws ClassNotFoundException, IOException {
         IGClient client = SerializeUtil.deserialize(clientFile, IGClient.class);
         CookieJar jar = SerializeUtil.deserialize(cookieFile, SerializableCookieJar.class);
 
@@ -213,6 +212,7 @@ public class IGClient implements Serializable {
                 .cookieJar(jar)
                 .build();
 
+        client.sendLoginRequest().join();
         return client;
     }
 
@@ -221,6 +221,7 @@ public class IGClient implements Serializable {
         SerializeUtil.serialize(this.httpClient.cookieJar(), cookieFile);
     }
 
+    @Serial
     private Object readResolve() throws ObjectStreamException {
         this.initializeDefaults();
         if (loggedIn)
@@ -295,8 +296,8 @@ public class IGClient implements Serializable {
         }
 
         @FunctionalInterface
-        public static interface LoginHandler {
-            public LoginResponse accept(IGClient client, LoginResponse t);
+        public interface LoginHandler {
+            LoginResponse accept(IGClient client, LoginResponse t);
         }
 
     }

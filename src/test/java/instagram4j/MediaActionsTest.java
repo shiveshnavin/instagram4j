@@ -19,14 +19,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -39,52 +33,16 @@ public class MediaActionsTest {
 
     private static IGClient client;
 
-    public static void setUpProxy(OkHttpClient.Builder clientBuilder) {
-        TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-                    @Override
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                    }
-
-                    @Override
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                    }
-
-                    @Override
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return new java.security.cert.X509Certificate[]{};
-                    }
-                }
-        };
-        SSLContext trustAllSslContext;
-        try {
-            trustAllSslContext = SSLContext.getInstance("SSL");
-            trustAllSslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new RuntimeException(e);
-        }
-        SSLSocketFactory trustAllSslSocketFactory = trustAllSslContext.getSocketFactory();
-
-        clientBuilder.sslSocketFactory(trustAllSslSocketFactory, (X509TrustManager) trustAllCerts[0])
-                .hostnameVerifier(new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String s, SSLSession sslSession) {
-                        return true;
-                    }
-                })
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(8080)));
-
-    }
-
     @BeforeClass
     public static void setUp() throws IOException, ClassNotFoundException {
         BasicConfigurator.configure();
         LOGGER.setLevel(Level.ALL);
         OkHttpClient.Builder clientBuilder = IGUtils.defaultHttpClientBuilder();
 
-        setUpProxy(clientBuilder);
+        TestUtils.setUpProxy(clientBuilder);
 
         client = IGClient.deserialize(new File(CLIENT_FILE), new File(COOKIE_FILE), clientBuilder);
+
     }
 
     @AfterClass
@@ -116,9 +74,7 @@ public class MediaActionsTest {
         User user = client.actions().users().findByUsername("cristiano").join().getUser();
         FeedUserResponse response = new FeedUserRequest(user.getPk()).execute(client).join();
         response.getItems()
-                .forEach(media -> {
-                    LOGGER.info(media.getMedia_type() + " " + media.getLike_count() + " " + media.getCaption().getText());
-                });
+                .forEach(media -> LOGGER.info(media.getMedia_type() + " " + media.getLike_count() + " " + media.getCaption().getText()));
     }
 
     @Test
