@@ -7,6 +7,7 @@ import com.github.instagram4j.instagram4j.models.media.timeline.TimelineVideoMed
 import com.github.instagram4j.instagram4j.models.user.User;
 import com.github.instagram4j.instagram4j.requests.feed.FeedClipsRequest;
 import com.github.instagram4j.instagram4j.requests.feed.FeedUserRequest;
+import com.github.instagram4j.instagram4j.responses.accounts.AccountsAccessToolHtmlResponse;
 import com.github.instagram4j.instagram4j.responses.feed.FeedClipsResponse;
 import com.github.instagram4j.instagram4j.responses.feed.FeedUserResponse;
 import com.github.instagram4j.instagram4j.utils.IGUtils;
@@ -109,5 +110,11 @@ public class MediaActionsTest {
     @Test
     public void testChangeBio() {
         client.actions().account().setBio("test").join();
+    }
+
+    @Test
+    public void testGetAccountRegDate() {
+        AccountsAccessToolHtmlResponse response = client.actions().account().accessTool().join();
+        System.out.println(response.getJoinedDate());
     }
 }

@@ -9,6 +9,7 @@ import com.github.instagram4j.instagram4j.IGClient;
 import com.github.instagram4j.instagram4j.requests.accounts.*;
 import com.github.instagram4j.instagram4j.requests.accounts.AccountsActionRequest.AccountsAction;
 import com.github.instagram4j.instagram4j.responses.IGResponse;
+import com.github.instagram4j.instagram4j.responses.accounts.AccountsAccessToolHtmlResponse;
 import com.github.instagram4j.instagram4j.responses.accounts.AccountsUserResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,5 +44,9 @@ public class AccountAction {
     
     public CompletableFuture<AccountsUserResponse> currentUser() {
         return new AccountsCurrentUserRequest().execute(client);
+    }
+
+    public CompletableFuture<AccountsAccessToolHtmlResponse> accessTool() {
+        return new AccountsAccessToolRequest().execute(client);
     }
 }
