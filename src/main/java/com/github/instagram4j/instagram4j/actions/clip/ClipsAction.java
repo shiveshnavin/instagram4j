@@ -50,7 +50,7 @@ public class ClipsAction {
                     log.info("{} Transcode not finished. Retrying up to three times.", upload_id);
                     return AsyncAction.retry(
                             () -> MediaAction.configureToClips(client, upload_id, payload),
-                            tr, 3, 10,
+                            tr, 5, 10,
                             TimeUnit.SECONDS);
                 })
                 .thenCompose(Function.identity());
