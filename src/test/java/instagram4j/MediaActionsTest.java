@@ -2,45 +2,46 @@ package instagram4j;
 
 
 import com.github.instagram4j.instagram4j.IGClient;
+import com.github.instagram4j.instagram4j.actions.media.MediaAction;
 import com.github.instagram4j.instagram4j.models.media.Media;
+import com.github.instagram4j.instagram4j.models.media.timeline.Comment;
 import com.github.instagram4j.instagram4j.models.media.timeline.TimelineVideoMedia;
 import com.github.instagram4j.instagram4j.models.user.User;
 import com.github.instagram4j.instagram4j.requests.feed.FeedClipsRequest;
 import com.github.instagram4j.instagram4j.requests.feed.FeedUserRequest;
+import com.github.instagram4j.instagram4j.requests.media.MediaGetCommentsRequest.SortOrder;
 import com.github.instagram4j.instagram4j.responses.accounts.AccountsAccessToolHtmlResponse;
 import com.github.instagram4j.instagram4j.responses.feed.FeedClipsResponse;
 import com.github.instagram4j.instagram4j.responses.feed.FeedUserResponse;
+import com.github.instagram4j.instagram4j.responses.media.MediaGetCommentsResponse;
 import com.github.instagram4j.instagram4j.utils.IGUtils;
 import okhttp3.OkHttpClient;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static instagram4j.TestUtils.*;
+
 public class MediaActionsTest {
-    private static final String PATH = "temp/";
-    private static final String CLIENT_FILE = PATH + "igclient.ser";
-    private static final String COOKIE_FILE = PATH + "cookie.ser";
-    private static final Logger LOGGER = Logger.getRootLogger();
+    private static final Logger log = LoggerFactory.getLogger(MediaActionsTest.class);
 
     private static IGClient client;
 
     @BeforeClass
     public static void setUp() throws IOException, ClassNotFoundException {
-        BasicConfigurator.configure();
-        LOGGER.setLevel(Level.ALL);
         OkHttpClient.Builder clientBuilder = IGUtils.defaultHttpClientBuilder();
 
-        TestUtils.setUpProxy(clientBuilder);
+        setUpProxy(clientBuilder);
 
         client = IGClient.deserialize(new File(CLIENT_FILE), new File(COOKIE_FILE), clientBuilder);
 
@@ -49,7 +50,7 @@ public class MediaActionsTest {
     @AfterClass
     public static void tearDown() throws IOException {
         client.serialize(new File(CLIENT_FILE), new File(COOKIE_FILE));
-        LOGGER.info("Client has been serialized successfully");
+        log.info("Client has been serialized successfully");
     }
 
     @Test
@@ -75,36 +76,36 @@ public class MediaActionsTest {
         User user = client.actions().users().findByUsername("cristiano").join().getUser();
         FeedUserResponse response = new FeedUserRequest(user.getPk()).execute(client).join();
         response.getItems()
-                .forEach(media -> LOGGER.info(media.getMedia_type() + " " + media.getLike_count() + " " + media.getCaption().getText()));
+                .forEach(media -> log.info(media.getMedia_type() + " " + media.getLike_count() + " " + media.getCaption().getText()));
     }
 
     @Test
     public void testFeedDiscoverClips() {
         CompletableFuture<FeedClipsResponse> responseCompletableFuture = client.actions().clips().feedClips(FeedClipsRequest.FeedType.DISCOVER);
         FeedClipsResponse response = responseCompletableFuture.join();
-        LOGGER.warn(response.getItems().size());
+        log.warn(String.valueOf(response.getItems().size()));
         response.getItems()
-                .forEach(media -> LOGGER.info(media.getId() + " " + media.getUser().getUsername() + " " + media.getVideo_versions().get(0).getUrl()));
+                .forEach(media -> log.info(media.getId() + " " + media.getUser().getUsername() + " " + media.getVideo_versions().get(0).getUrl()));
     }
 
     @Test
     public void testFeedDiscoverClipsWithAmount() {
         int amount = 21;
         List<TimelineVideoMedia> clips = client.actions().clips().feedClipsList(FeedClipsRequest.FeedType.DISCOVER, amount);
-        clips.forEach(media -> LOGGER.info(media.getId() + " " + media.getUser().getUsername()));
+        clips.forEach(media -> log.info(media.getId() + " " + media.getUser().getUsername()));
         Assert.assertTrue(clips.size() >= amount);
         float uniqueAmount = clips.stream().map(Media::getId).collect(Collectors.toSet()).size();
-        LOGGER.info("Unique amount = " + uniqueAmount + "; uniqueness = " + uniqueAmount / clips.size());
+        log.info("Unique amount = " + uniqueAmount + "; uniqueness = " + uniqueAmount / clips.size());
     }
 
     @Test
     public void testFeedDiscoverClipsWithAmountAsync() {
         int amount = 21;
         List<TimelineVideoMedia> clips = client.actions().clips().feedClipsAsync(FeedClipsRequest.FeedType.DISCOVER, amount).join();
-        clips.forEach(media -> LOGGER.info(media.getId() + " " + media.getUser().getUsername()));
+        clips.forEach(media -> log.info(media.getId() + " " + media.getUser().getUsername()));
         Assert.assertTrue(clips.size() >= amount);
         float uniqueAmount = clips.stream().map(Media::getId).collect(Collectors.toSet()).size();
-        LOGGER.info("Unique amount = " + uniqueAmount + "; uniqueness = " + uniqueAmount / clips.size());
+        log.info("Unique amount = " + uniqueAmount + "; uniqueness = " + uniqueAmount / clips.size());
     }
 
     @Test
@@ -116,5 +117,22 @@ public class MediaActionsTest {
     public void testGetAccountRegDate() {
         AccountsAccessToolHtmlResponse response = client.actions().account().accessTool().join();
         System.out.println(response.getJoinedDate());
+    }
+
+
+    @Test
+    public void getPopularCommentsTest() {
+        List<TimelineVideoMedia> clips = client.actions().clips().feedClips(FeedClipsRequest.FeedType.DISCOVER).join().getItems();
+        clips.forEach(clip -> {
+            log.warn("comments:{}, views:{}, likes:{}, url:{}",
+                    clip.getComment_count(),
+                    clip.getView_count(),
+                    clip.getLike_count(),
+                    clip.getVideo_versions().get(0).getUrl());
+            MediaGetCommentsResponse response = MediaAction.of(client, clip.getId()).commentsPage(SortOrder.POPULAR).join();
+            response.getComments().stream()
+                    .sorted(Comparator.comparingInt(Comment::getComment_like_count).reversed())
+                    .forEach(comment -> log.info("{} : {}", comment.getComment_like_count(), comment.getText()));
+        });
     }
 }

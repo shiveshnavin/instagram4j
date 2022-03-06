@@ -47,7 +47,7 @@ public class ClipsAction {
                     if (IGResponseException.IGFailedResponse.of(tr.getCause()).getStatusCode() != 202 &&
                             !(tr.getCause() instanceof SocketTimeoutException))
                         throw new CompletionException(tr.getCause());
-                    log.info("{} Transcode not finished. Retrying up to three times.", upload_id);
+                    log.info("{} Transcode not finished. Retrying up to five times.", upload_id);
                     return AsyncAction.retry(
                             () -> MediaAction.configureToClips(client, upload_id, payload),
                             tr, 5, 10,

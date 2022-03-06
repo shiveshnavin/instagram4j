@@ -9,6 +9,9 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 public interface TestUtils {
+    String PATH = "temp/";
+    String CLIENT_FILE = PATH + "igclient.ser";
+    String COOKIE_FILE = PATH + "cookie.ser";
 
     static void setUpProxy(OkHttpClient.Builder clientBuilder) {
         TrustManager[] trustAllCerts = new TrustManager[]{
