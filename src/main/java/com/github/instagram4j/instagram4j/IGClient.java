@@ -44,25 +44,25 @@ import okhttp3.ResponseBody;
 @Data
 @Slf4j
 public class IGClient implements Serializable {
-    private static final long serialVersionUID = -893265874836l;
-    private final String $username;
-    private final String $password;
-    private transient String encryptionId, encryptionKey, authorization;
+    public static final long serialVersionUID = -893265874836l;
+    public final String $username;
+    public final String $password;
+    public String encryptionId, encryptionKey, authorization;
     @Accessors(chain = true)
-    private transient OkHttpClient httpClient;
-    private transient String sessionId;
-    private transient IGClientActions actions;
+    public transient OkHttpClient httpClient;
+    public String sessionId;
+    public transient IGClientActions actions;
     @Accessors(chain = true)
-    private transient ExceptionallyHandler exceptionallyHandler;
-    private String deviceId;
-    private String guid;
-    private String phoneId;
+    public transient ExceptionallyHandler exceptionallyHandler;
+    public String deviceId;
+    public String guid;
+    public String phoneId;
     @Setter(AccessLevel.PRIVATE)
-    private boolean loggedIn = false;
+    public boolean loggedIn = false;
     @Setter(AccessLevel.PRIVATE)
-    private Profile selfProfile;
+    public Profile selfProfile;
     @Accessors(chain = true)
-    private IGDevice device = IGAndroidDevice.GOOD_DEVICES[6];
+    public IGDevice device = IGAndroidDevice.GOOD_DEVICES[6];
 
     public IGClient(String username, String password) {
         this(username, password, IGUtils.defaultHttpClientBuilder().build());
@@ -78,7 +78,7 @@ public class IGClient implements Serializable {
         this.initializeDefaults();
     }
 
-    private void initializeDefaults() {
+    public void initializeDefaults() {
         this.sessionId = IGUtils.randomUuid();
         this.actions = new IGClientActions(this);
         this.exceptionallyHandler = new ExceptionallyHandler() {
@@ -158,7 +158,7 @@ public class IGClient implements Serializable {
                 });
     }
 
-    private void setLoggedInState(LoginResponse state) {
+    public void setLoggedInState(LoginResponse state) {
         if (!state.getStatus().equals("ok"))
             return;
         this.loggedIn = true;
@@ -221,7 +221,7 @@ public class IGClient implements Serializable {
         SerializeUtil.serialize(this.httpClient.cookieJar(), cookieFile);
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    public Object readResolve() throws ObjectStreamException {
         this.initializeDefaults();
         if (loggedIn)
             log.info("Logged into {} ({})", selfProfile.getUsername(), selfProfile.getPk());
@@ -233,13 +233,13 @@ public class IGClient implements Serializable {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Builder {
-        private String username;
-        private String password;
-        private OkHttpClient client;
-        private IGDevice device = IGAndroidDevice.GOOD_DEVICES[6];
-        private LoginHandler onChallenge;
-        private LoginHandler onTwoFactor;
-        private BiConsumer<IGClient, LoginResponse> onLogin = (client, login) -> {
+        public String username;
+        public String password;
+        public OkHttpClient client;
+        public IGDevice device = IGAndroidDevice.GOOD_DEVICES[6];
+        public LoginHandler onChallenge;
+        public LoginHandler onTwoFactor;
+        public BiConsumer<IGClient, LoginResponse> onLogin = (client, login) -> {
         };
 
         public IGClient build() {
@@ -270,7 +270,7 @@ public class IGClient implements Serializable {
             return client;
         }
 
-        private LoginResponse performLogin(IGClient client) throws IGLoginException {
+        public LoginResponse performLogin(IGClient client) throws IGLoginException {
             LoginResponse response = client.sendLoginRequest()
                     .exceptionally(tr -> {
                         LoginResponse loginResponse =

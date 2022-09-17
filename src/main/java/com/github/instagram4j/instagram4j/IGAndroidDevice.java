@@ -5,15 +5,15 @@ import lombok.Data;
 
 @Data
 public class IGAndroidDevice extends IGDevice implements Serializable {
-    private static final long serialVersionUID = -885748975689l;
-    private final String androidVersion;
-    private final String androidRelease;
-    private final String dpi;
-    private final String displayResolution;
-    private final String manufacturer;
-    private final String model;
-    private final String device;
-    private final String cpu;
+    public static final long serialVersionUID = -885748975689l;
+    public final String androidVersion;
+    public final String androidRelease;
+    public final String dpi;
+    public final String displayResolution;
+    public final String manufacturer;
+    public final String model;
+    public final String device;
+    public final String cpu;
     public static final String CAPABILITIES = "3brTvw==";
 
     public IGAndroidDevice(String formatted) {
