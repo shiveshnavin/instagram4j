@@ -89,31 +89,31 @@ public abstract class IGRequest<T extends IGResponse> {
     }
 
     protected Request.Builder applyHeaders(IGClient client, Request.Builder req) {
-        req.addHeader("Connection", "close");
-        req.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-        req.addHeader("Accept-Language", "en-US");
-        req.addHeader("X-IG-Capabilities", client.getDevice().getCapabilities());
-        req.addHeader("X-IG-App-ID", IGConstants.APP_ID);
-        req.addHeader("User-Agent", client.getDevice().getUserAgent());
-        req.addHeader("X-IG-Connection-Type", "WIFI");
-        req.addHeader("X-Ads-Opt-Out", "0");
-        req.addHeader("X-CM-Bandwidth-KBPS", "-1.000");
-        req.addHeader("X-CM-Latency", "-1.000");
-        req.addHeader("X-IG-App-Locale", "en_US");
-        req.addHeader("X-IG-Device-Locale", "en_US");
-        req.addHeader("X-Pigeon-Session-Id", IGUtils.randomUuid());
-        req.addHeader("X-Pigeon-Rawclienttime", System.currentTimeMillis() + "");
-        req.addHeader("X-IG-Connection-Speed",
+        req.addHeader("Connection".toLowerCase(), "close");
+        req.addHeader("Content-Type".toLowerCase(), "application/x-www-form-urlencoded; charset=UTF-8");
+        req.addHeader("Accept-Language".toLowerCase(), "en-US");
+        req.addHeader("X-IG-Capabilities".toLowerCase(), client.getDevice().getCapabilities());
+        req.addHeader("X-IG-App-ID".toLowerCase(), IGConstants.APP_ID);
+        req.addHeader("User-Agent".toLowerCase(), client.getDevice().getUserAgent());
+        req.addHeader("X-IG-Connection-Type".toLowerCase(), "WIFI");
+        req.addHeader("X-Ads-Opt-Out".toLowerCase(), "0");
+        req.addHeader("X-CM-Bandwidth-KBPS".toLowerCase(), "-1.000");
+        req.addHeader("X-CM-Latency".toLowerCase(), "-1.000");
+        req.addHeader("X-IG-App-Locale".toLowerCase(), "en_US");
+        req.addHeader("X-IG-Device-Locale".toLowerCase(), "en_US");
+        req.addHeader("X-Pigeon-Session-Id".toLowerCase(), IGUtils.randomUuid());
+        req.addHeader("X-Pigeon-Rawclienttime".toLowerCase(), System.currentTimeMillis() + "");
+        req.addHeader("X-IG-Connection-Speed".toLowerCase(),
                 ThreadLocalRandom.current().nextInt(2000, 4000) + "kbps");
-        req.addHeader("X-IG-Bandwidth-Speed-KBPS", "-1.000");
-        req.addHeader("X-IG-Bandwidth-TotalBytes-B", "0");
-        req.addHeader("X-IG-Bandwidth-TotalTime-MS", "0");
-        req.addHeader("X-IG-Extended-CDN-Thumbnail-Cache-Busting-Value", "1000");
-        req.addHeader("X-IG-Device-ID", client.getGuid());
-        req.addHeader("X-IG-Android-ID", client.getDeviceId());
-        req.addHeader("X-FB-HTTP-engine", "Liger");
+        req.addHeader("X-IG-Bandwidth-Speed-KBPS".toLowerCase(), "-1.000");
+        req.addHeader("X-IG-Bandwidth-TotalBytes-B".toLowerCase(), "0");
+        req.addHeader("X-IG-Bandwidth-TotalTime-MS".toLowerCase(), "0");
+        req.addHeader("X-IG-Extended-CDN-Thumbnail-Cache-Busting-Value".toLowerCase(), "1000");
+        req.addHeader("X-IG-Device-ID".toLowerCase(), client.getGuid());
+        req.addHeader("X-IG-Android-ID".toLowerCase(), client.getDeviceId());
+        req.addHeader("X-FB-HTTP-engine".toLowerCase(), "Liger");
         Optional.ofNullable(client.getAuthorization())
-                .ifPresent(s -> req.addHeader("Authorization", s));
+                .ifPresent(s -> req.addHeader("Authorization".toLowerCase(), s));
 
           for(Map.Entry<String, String> header:client.getDynamicHeaders().entrySet()){
               req.addHeader(header.getKey(),header.getValue());
