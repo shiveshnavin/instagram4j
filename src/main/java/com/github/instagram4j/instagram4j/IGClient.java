@@ -1,18 +1,5 @@
 package com.github.instagram4j.instagram4j;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import com.github.instagram4j.instagram4j.actions.IGClientActions;
 import com.github.instagram4j.instagram4j.exceptions.ExceptionallyHandler;
 import com.github.instagram4j.instagram4j.exceptions.IGLoginException;
@@ -28,6 +15,21 @@ import com.github.instagram4j.instagram4j.responses.accounts.LoginResponse;
 import com.github.instagram4j.instagram4j.utils.IGUtils;
 import com.github.instagram4j.instagram4j.utils.SerializableCookieJar;
 import com.github.instagram4j.instagram4j.utils.SerializeUtil;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import kotlin.Pair;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -176,12 +178,13 @@ public class IGClient implements Serializable {
 
 
     public Map<String, String> getDynamicHeaders() {
-        if(dynamicHeaders == null)
+        if (dynamicHeaders == null)
             dynamicHeaders = new HashMap<>();
         return dynamicHeaders;
     }
 
-    public Map<String,String > dynamicHeaders = new HashMap<>();
+    public Map<String, String> dynamicHeaders = new HashMap<>();
+
     public void setFromResponseHeaders(Response res) {
         Optional.ofNullable(res.header("ig-set-password-encryption-key-id"))
                 .ifPresent(s -> this.encryptionId = s);
@@ -191,7 +194,8 @@ public class IGClient implements Serializable {
                 .ifPresent(s -> this.authorization = s);
         for (Iterator<Pair<String, String>> it = res.headers().iterator(); it.hasNext(); ) {
             Pair<String, String> header = it.next();
-            dynamicHeaders.put(header.getFirst().replace("ig-set-",""),header.getSecond());
+            if (!header.getFirst().startsWith("content-"))
+                getDynamicHeaders().put(header.getFirst().replace("ig-set-", ""), header.getSecond());
         }
     }
 
@@ -220,7 +224,7 @@ public class IGClient implements Serializable {
     }
 
     public static IGClient deserialize(File clientFile, File cookieFile,
-            OkHttpClient.Builder clientBuilder) throws ClassNotFoundException, IOException {
+                                       OkHttpClient.Builder clientBuilder) throws ClassNotFoundException, IOException {
         IGClient client = SerializeUtil.deserialize(clientFile, IGClient.class);
         CookieJar jar = SerializeUtil.deserialize(cookieFile, SerializableCookieJar.class);
 
