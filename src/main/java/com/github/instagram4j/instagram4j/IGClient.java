@@ -176,6 +176,8 @@ public class IGClient implements Serializable {
 
 
     public Map<String, String> getDynamicHeaders() {
+        if(dynamicHeaders == null)
+            dynamicHeaders = new HashMap<>();
         return dynamicHeaders;
     }
 
