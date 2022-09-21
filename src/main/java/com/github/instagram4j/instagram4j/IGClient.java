@@ -195,7 +195,7 @@ public class IGClient implements Serializable {
         for (Iterator<Pair<String, String>> it = res.headers().iterator(); it.hasNext(); ) {
             Pair<String, String> header = it.next();
             if (!header.getFirst().startsWith("content-"))
-                getDynamicHeaders().put(header.getFirst().replace("ig-set-", ""), header.getSecond());
+                getDynamicHeaders().put(header.getFirst().toLowerCase().replace("ig-set-", ""), header.getSecond());
         }
     }
 

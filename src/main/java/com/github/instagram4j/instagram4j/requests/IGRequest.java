@@ -116,7 +116,7 @@ public abstract class IGRequest<T extends IGResponse> {
                 .ifPresent(s -> req.addHeader("Authorization".toLowerCase(), s));
 
           for(Map.Entry<String, String> header:client.getDynamicHeaders().entrySet()){
-              req.addHeader(header.getKey(),header.getValue());
+              req.addHeader(header.getKey().toLowerCase(),header.getValue());
           }
 
         return req;
