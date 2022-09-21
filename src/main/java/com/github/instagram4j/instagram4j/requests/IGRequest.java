@@ -2,6 +2,8 @@ package com.github.instagram4j.instagram4j.requests;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -112,6 +114,10 @@ public abstract class IGRequest<T extends IGResponse> {
         req.addHeader("X-FB-HTTP-engine", "Liger");
         Optional.ofNullable(client.getAuthorization())
                 .ifPresent(s -> req.addHeader("Authorization", s));
+
+          for(Map.Entry<String, String> header:client.getDynamicHeaders().entrySet()){
+              req.addHeader(header.getKey(),header.getValue());
+          }
 
         return req;
     }

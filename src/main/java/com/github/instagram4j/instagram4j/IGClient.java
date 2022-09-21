@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -171,6 +174,12 @@ public class IGClient implements Serializable {
                 .orElse("missing");
     }
 
+
+    public Map<String, String> getDynamicHeaders() {
+        return dynamicHeaders;
+    }
+
+    public Map<String,String > dynamicHeaders = new HashMap<>();
     public void setFromResponseHeaders(Response res) {
         Optional.ofNullable(res.header("ig-set-password-encryption-key-id"))
                 .ifPresent(s -> this.encryptionId = s);
@@ -178,6 +187,10 @@ public class IGClient implements Serializable {
                 .ifPresent(s -> this.encryptionKey = s);
         Optional.ofNullable(res.header("ig-set-authorization"))
                 .ifPresent(s -> this.authorization = s);
+        for (Iterator<Pair<String, String>> it = res.headers().iterator(); it.hasNext(); ) {
+            Pair<String, String> header = it.next();
+            dynamicHeaders.put(header.getFirst().replace("ig-set-",""),header.getSecond());
+        }
     }
 
     public IGPayload setIGPayloadDefaults(IGPayload load) {
